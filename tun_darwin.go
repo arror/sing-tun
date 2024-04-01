@@ -29,6 +29,34 @@ type NativeTun struct {
 	inet6Address [16]byte
 }
 
+func NewFD(options Options) (int, error) {
+
+	options.Name = CalculateInterfaceName("")
+
+	ifIndex := -1
+	_, err := fmt.Sscanf(options.Name, "utun%d", &ifIndex)
+	if err != nil {
+		return 0, E.New("bad tun name: ", options.Name)
+	}
+
+	tunFd, err := unix.Socket(unix.AF_SYSTEM, unix.SOCK_DGRAM, 2)
+	if err != nil {
+		return 0, err
+	}
+
+	err = configure(tunFd, ifIndex, options.Name, options)
+	if err != nil {
+		unix.Close(tunFd)
+		return 0, err
+	}
+
+	return tunFd, nil
+}
+
+func FlushDNSCache() {
+	flushDNSCache()
+}
+
 func New(options Options) (Tun, error) {
 	var tunFd int
 	if options.FileDescriptor == 0 {
