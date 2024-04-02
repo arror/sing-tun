@@ -30,9 +30,6 @@ type NativeTun struct {
 }
 
 func NewFD(options Options) (int, error) {
-
-	options.Name = CalculateInterfaceName("")
-
 	ifIndex := -1
 	_, err := fmt.Sscanf(options.Name, "utun%d", &ifIndex)
 	if err != nil {
